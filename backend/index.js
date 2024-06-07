@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 
 // Define routes
 app.get('/', (req, res) => {
-  res.send('Hello, World!');
+  res.send('API is running');
 });
 
 // Routes
