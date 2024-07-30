@@ -1,11 +1,14 @@
 import { Routes } from '@angular/router';
-import { NoteListComponent } from './components/note-list/note-list.component';
-import { NoteDetailsComponent } from './components/note-details/note-details.component';
-import { NoteFormComponent } from './components/note-form/note-form.component';
+import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
-    { path: '', redirectTo: '/notes', pathMatch: 'full' },
-    { path: 'notes', component: NoteListComponent },
-    { path: 'notes/new', component: NoteFormComponent },
-    { path: 'notes/:id', component: NoteDetailsComponent },
+    { path: '', loadComponent: () => import('./components/note-list/note-list.component').then(m => m.NoteListComponent), canActivate: [AuthGuard] },
+    { path: 'note/:id', loadComponent: () => import('./components/note-detail/note-detail.component').then(m => m.NoteDetailComponent), canActivate: [AuthGuard] },
+    { path: 'new-note', loadComponent: () => import('./components/note-form/note-form.component').then(m => m.NoteFormComponent) },
+    { path: 'edit-note/:id', loadComponent: () => import('./components/note-form/note-form.component').then(m => m.NoteFormComponent), canActivate: [AuthGuard] },
+    { path: 'login', loadComponent: () => import('./auth/login/login.component').then(m => m.LoginComponent) },
+    { path: 'register', loadComponent: () => import('./auth/register/register.component').then(m => m.RegisterComponent) },
+    { path: 'forgot-password', loadComponent: () => import('./auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent) },
+    { path: 'reset-password/:token', loadComponent: () => import('./auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent) },
+    { path: '**', redirectTo: '' },
 ];

@@ -1,1 +1,29 @@
-<p>note-list works!</p>
+<div class="container mx-auto mt-8">
+    <h1 class="text-2xl font-bold mb-4">Notes</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @if (isLoading() && notes.length === 0 && !error()) {
+        <div class="p-4 bg-white rounded shadow animate-pulse">
+            <h2 class="text-xl font-bold">Loading...</h2>
+            <p class="mt-2">Please wait while we fetch the notes.</p>
+        </div>
+        } @else if (notes.length === 0 && !isLoading() && !error()) {
+        <div class="p-4 bg-white rounded shadow">
+            <h2 class="text-xl font-bold">No notes found</h2>
+            <p class="mt-2">There are no notes available. Please create a new note.</p>
+        </div>
+        } @else if (error() && !isLoading() && notes.length === 0) {
+        <div class="p-4 bg-white rounded shadow">
+            <h2 class="text-xl font-bold">Error</h2>
+            <p class="mt-2">{{ error() }}</p>
+        </div>
+        }@else {
+        @for (note of notes; track $index) {
+        <div class="p-4 bg-white rounded shadow">
+            <h2 class="text-xl font-bold">{{ note.title }}</h2>
+            <p class="mt-2">{{ note.content }}</p>
+            <a [routerLink]="['/note', note._id]" class="text-blue-500 hover:underline">Read more</a>
+        </div>
+        }
+        }
+    </div>
+</div>

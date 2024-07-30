@@ -1,16 +1,17 @@
-const Note = require('../models/noteModel');
+const Note = require("../models/noteModel");
 
 // Create a new note
 exports.createNote = async (req, res) => {
   try {
     const { title, content } = req.body;
     const newNote = new Note({
+      user: req.user.id,
       title,
       content,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
     await newNote.save();
-    res.status(201).json({ message: 'Note created successfully' });
+    res.status(201).json({ message: "Note created successfully" });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -19,7 +20,7 @@ exports.createNote = async (req, res) => {
 // Get all notes
 exports.getAllNotes = async (req, res) => {
   try {
-    const notes = await Note.find();
+    const notes = await Note.find({ user: req.user.id });
     res.json(notes);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -31,7 +32,7 @@ exports.getNote = async (req, res) => {
   try {
     const note = await Note.findById(req.params.id);
     if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
+      return res.status(404).json({ message: "Note not found" });
     }
     res.json(note);
   } catch (err) {
@@ -45,12 +46,12 @@ exports.updateNote = async (req, res) => {
     const { title, content } = req.body;
     const updated = await Note.findByIdAndUpdate(req.params.id, {
       title,
-      content
+      content,
     });
     if (!updated) {
-      return res.status(404).json({ message: 'Note not found' });
+      return res.status(404).json({ message: "Note not found" });
     }
-    res.json({ message: 'Note updated successfully' });
+    res.json({ message: "Note updated successfully" });
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
@@ -60,7 +61,7 @@ exports.updateNote = async (req, res) => {
 exports.deleteNote = async (req, res) => {
   try {
     await Note.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Note deleted successfully' });
+    res.json({ message: "Note deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

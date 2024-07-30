@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const connectDB = require('./config/db');
 const cors = require('cors');
 const noteRoutes = require('./routes/noteRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +24,7 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/notes', noteRoutes);
+app.use('/api/auth', authRoutes);
 
 // Connect to MongoDB
 connectDB();

@@ -11,7 +11,7 @@ describe('NoteFormComponent', () => {
       imports: [NoteFormComponent]
     })
     .compileComponents();
-    
+
     fixture = TestBed.createComponent(NoteFormComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

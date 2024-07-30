@@ -1,1 +1,16 @@
-<p>note-form works!</p>
+<div class="container mx-auto mt-8">
+    <h1 class="text-2xl font-bold mb-4">{{ isEditMode ? 'Edit Note' : 'New Note' }}</h1>
+    <form [formGroup]="noteForm" (ngSubmit)="onSubmit()" class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Title</label>
+            <input id="text" type="text" class="w-full px-3 py-2 border rounded" formControlName="title"
+            name="email">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Content</label>
+            <textarea formControlName="content" rows="4" class="w-full px-3 py-2 border rounded"></textarea>
+        </div>
+        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded shadow">{{ isEditMode ? 'Update' :
+            'Create' }}</button>
+    </form>
+</div>

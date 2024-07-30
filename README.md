@@ -1,27 +1,122 @@
-# NotesApp
+# Notes App
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.4.
+This is a full-stack notes application built with Node.js for the backend and Angular for the frontend. It allows users to sign up, log in, add, edit, delete, and view notes. The backend server is built with Express.js and MongoDB, and the frontend is built with Angular and Tailwind CSS.
 
-## Development server
+## Table of Contents
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- [Features](#features)
+- [Technologies Used](#technologies-used)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Running the Application](#running-the-application)
+- [API Endpoints](#api-endpoints)
+- [Usage](#usage)
+- [License](#license)
 
-## Code scaffolding
+## Features
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+- User authentication with JWT
+- Add, edit, delete, and view notes
+- Forgot and reset password functionality
+- Responsive design using Tailwind CSS
 
-## Build
+## Technologies Used
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+- Backend: Node.js, Express.js, MongoDB, Mongoose, JWT, Nodemailer
+- Frontend: Angular, Tailwind CSS
+- Authentication: JSON Web Tokens (JWT)
 
-## Running unit tests
+## Prerequisites
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+- Node.js (v14.x or later)
+- Angular CLI (v18.x or later)
+- MongoDB (local or remote instance)
 
-## Running end-to-end tests
+## Installation
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+### Backend
 
-## Further help
+1. Clone the repository:
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+    ```sh
+    git clone https://github.com/manthanank/notes-app.git
+    cd notes-app/backend
+    ```
+
+2. Install dependencies:
+
+    ```sh
+    npm install
+    ```
+
+3. Create a `.env` file in the `backend` directory with the following content:
+
+    ```bash
+    PORT=5000
+    MONGO_URI=your_mongodb_connection_string
+    JWT_SECRET=your_jwt_secret
+    EMAIL_USER=your-email@gmail.com
+    EMAIL_PASS=your-email-password
+    ```
+
+4. Start the backend server:
+
+    ```sh
+    npm start
+    ```
+
+### Frontend
+
+1. Navigate to the frontend directory:
+
+    ```sh
+    cd notes-app
+    ```
+
+2. Install dependencies:
+
+    ```sh
+    npm install
+    ```
+
+3. Start the frontend server:
+
+    ```sh
+    ng serve
+    ```
+
+## Running the Application
+
+- The backend server will run on `http://localhost:5000`.
+- The frontend server will run on `http://localhost:4200`.
+
+## API Endpoints
+
+### Auth
+
+- **POST /api/auth/signup**: Create a new user
+- **POST /api/auth/login**: Authenticate a user and get a token
+- **POST /api/auth/forgot-password**: Send password reset email
+- **POST /api/auth/reset-password/:token**: Reset user password
+
+### Notes
+
+- **GET /api/notes**: Get all notes for the authenticated user
+- **POST /api/notes**: Add a new notes
+- **PUT /api/notes/:id**: Update an existing notes
+- **DELETE /api/notes/:id**: Delete an notes
+
+## Usage
+
+1. **Sign Up**: Create a new account by navigating to the sign-up page.
+2. **Log In**: Log in with your credentials to access the notes app.
+3. **Forgot Password**: If you forget your password, use the forgot password link to reset it.
+4. **Reset Password**: Follow the instructions in the reset password email to set a new password.
+5. **Add notes**: Use the form to add a new notes.
+6. **View Notes**: View all notes on the home page.
+7. **Edit notes**: Click on an notes to edit its details.
+8. **Delete notes**: Click the delete button to remove an notes.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
