@@ -1,5 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  FormGroup,
+  FormBuilder,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Note } from '../../core/models/note';
 import { NoteService } from '../../core/services/note.service';
@@ -13,39 +18,57 @@ import { NoteService } from '../../core/services/note.service';
 })
 export class NoteFormComponent implements OnInit {
   noteForm: FormGroup;
-  isEditMode = false;
-  noteId: string | null = null;
+  isEditMode = signal<boolean>(false);
+  noteId = signal<string>('');
+  submitted = signal<boolean>(false);
 
-  constructor(
-    private fb: FormBuilder,
-    private noteService: NoteService,
-    private router: Router,
-    private route: ActivatedRoute
-  ) {
+  fb = inject(FormBuilder);
+  noteService = inject(NoteService);
+  router = inject(Router);
+  route = inject(ActivatedRoute);
+
+  constructor() {
     this.noteForm = this.fb.group({
-      title: ['', Validators.required],
-      content: [''],
+      title: [
+        '',
+        [
+          Validators.required,
+          Validators.maxLength(50),
+          Validators.minLength(3),
+        ],
+      ],
+      content: ['', [Validators.required, Validators.maxLength(500)]],
     });
   }
 
+  get title() {
+    return this.noteForm.get('title');
+  }
+
+  get content() {
+    return this.noteForm.get('content');
+  }
+
   ngOnInit(): void {
-    this.noteId = this.route.snapshot.paramMap.get('id');
-    if (this.noteId) {
-      this.isEditMode = true;
-      this.noteService.getNoteById(this.noteId).subscribe((note: Note) => {
+    const id = this.route.snapshot.paramMap.get('id') || '';
+    this.noteId.set(id);
+    if (id) {
+      this.isEditMode.set(true);
+      this.noteService.getNoteById(id).subscribe((note: Note) => {
         this.noteForm.patchValue(note);
       });
     }
   }
 
   onSubmit(): void {
+    this.submitted.set(true);
     if (this.noteForm.invalid) {
       return;
     }
 
     const note: Note = this.noteForm.value;
-    if (this.isEditMode && this.noteId) {
-      this.noteService.updateNote(this.noteId, note).subscribe(() => {
+    if (this.isEditMode() && this.noteId()) {
+      this.noteService.updateNote(this.noteId(), note).subscribe(() => {
         this.router.navigate(['/']);
       });
     } else {
