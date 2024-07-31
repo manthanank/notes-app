@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   createNote,
   getAllNotes,
+  searchNotes,
   getNote,
   updateNote,
   deleteNote,
@@ -13,6 +14,7 @@ router.use(authMiddleware);
 
 router.post("/", createNote);
 router.get("/", getAllNotes);
+router.get("/search", searchNotes);
 router.get("/:id", getNote);
 router.put("/:id", updateNote);
 router.delete("/:id", deleteNote);

@@ -17,6 +17,7 @@ This is a full-stack notes application built with Node.js for the backend and An
 
 - User authentication with JWT
 - Add, edit, delete, and view notes
+- Search notes by title or content
 - Forgot and reset password functionality
 - Responsive design using Tailwind CSS
 
@@ -87,7 +88,7 @@ This is a full-stack notes application built with Node.js for the backend and An
 
 ## Running the Application
 
-- The backend server will run on `http://localhost:5000`.
+- The backend server will run on `http://localhost:3000`.
 - The frontend server will run on `http://localhost:4200`.
 
 ## API Endpoints
@@ -105,6 +106,8 @@ This is a full-stack notes application built with Node.js for the backend and An
 - **POST /api/notes**: Add a new notes
 - **PUT /api/notes/:id**: Update an existing notes
 - **DELETE /api/notes/:id**: Delete an notes
+- **GET /api/notes/:id**: Get an notes by ID
+- **GET /api/notes/search?query=keyword**: Search notes by title or content
 
 ## Usage
 
@@ -116,6 +119,8 @@ This is a full-stack notes application built with Node.js for the backend and An
 6. **View Notes**: View all notes on the home page.
 7. **Edit notes**: Click on an notes to edit its details.
 8. **Delete notes**: Click the delete button to remove an notes.
+9. **Log Out**: Click the log out button to log out of your account.
+10. **Search notes**: Use the search bar to search for notes by title.
 
 ## License
 

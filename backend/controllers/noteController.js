@@ -27,6 +27,23 @@ exports.getAllNotes = async (req, res) => {
   }
 };
 
+// Search notes
+exports.searchNotes = async (req, res) => {
+  try {
+    const { query } = req.query;
+    const notes = await Note.find({
+      user: req.user.id,
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { content: { $regex: query, $options: "i" } },
+      ],
+    });
+    res.json(notes);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // Get a single note
 exports.getNote = async (req, res) => {
   try {

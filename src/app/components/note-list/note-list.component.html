@@ -1,5 +1,9 @@
 <div class="container mx-auto mt-8">
     <h1 class="text-2xl font-bold mb-4">Notes</h1>
+    <div class="mb-4">
+        <input type="text" class="w-full p-2 border border-gray-300 rounded" placeholder="Search notes..."
+            [(ngModel)]="search" (input)="searchNotes()" />
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @if (isLoading() && notes.length === 0 && !error()) {
         <div class="p-4 bg-white rounded shadow animate-pulse">
