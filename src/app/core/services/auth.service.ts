@@ -18,6 +18,10 @@ export class AuthService {
     this.autoLogin();
   }
 
+  redirectToNotes() {
+    this.router.navigate(['/notes']);
+  }
+
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
   }
@@ -33,13 +37,11 @@ export class AuthService {
   }
 
   login(user: any): Observable<any> {
-    return this.http
-      .post<any>(`${this.apiUrl}/login`, user)
-      .pipe(
-        tap((response: any) => {
-          this.handleAuthentication(response.token, response.expiresIn);
-        })
-      );
+    return this.http.post<any>(`${this.apiUrl}/login`, user).pipe(
+      tap((response: any) => {
+        this.handleAuthentication(response.token, response.expiresIn);
+      })
+    );
   }
 
   logout(): void {
@@ -48,7 +50,7 @@ export class AuthService {
     if (this.tokenExpirationTimer) {
       clearTimeout(this.tokenExpirationTimer);
     }
-    this.router.navigate(['/login']);
+    // this.router.navigate(['/login']);
   }
 
   forgotPassword(email: string): Observable<any> {

@@ -5,13 +5,11 @@
         </div>
         <div>
             @if (isLoggedIn()) {
-                <a routerLink="/new-note" class="text-white no-underline mr-4 hover:underline">Add Note</a>
-            }
-            @if (!isLoggedIn()) {
-            <a routerLink="/login" class="text-white no-underline mr-4 hover:underline">Login</a>
+            <a routerLink="/new-note" class="text-white no-underline mr-4 hover:underline">Add Note</a>
             }
             @if (isLoggedIn()) {
-            <button (click)="logout()" class="text-white bg-transparent border-none cursor-pointer hover:underline">Logout</button>
+            <button (click)="logout()"
+                class="text-white bg-transparent border-none cursor-pointer hover:underline">Logout</button>
             }
         </div>
     </div>

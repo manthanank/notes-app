@@ -6,7 +6,7 @@
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @if (isLoading() && notes.length === 0 && !error()) {
-        <div class="p-4 bg-white rounded shadow animate-pulse">
+        <div class="p-4 bg-white rounded shadow">
             <h2 class="text-xl font-bold">Loading...</h2>
             <p class="mt-2">Please wait while we fetch the notes.</p>
         </div>

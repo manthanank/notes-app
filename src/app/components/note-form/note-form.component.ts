@@ -50,12 +50,17 @@ export class NoteFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.initializeRouteData();
+  }
+
+  private initializeRouteData(): void {
     const id = this.route.snapshot.paramMap.get('id') || '';
     this.noteId.set(id);
     if (id) {
       this.isEditMode.set(true);
-      this.noteService.getNoteById(id).subscribe((note: Note) => {
-        this.noteForm.patchValue(note);
+      this.route.data.subscribe({
+        next: (res) => this.noteForm.patchValue(res['note']),
+        error: (err) => console.error(err),
       });
     }
   }
