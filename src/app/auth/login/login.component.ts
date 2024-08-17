@@ -59,7 +59,7 @@ export class LoginComponent {
       .subscribe({
         next: (res) => {
           localStorage.setItem('token', res.token);
-          this.router.navigate(['/']);
+          this.router.navigate(['/notes']);
         },
         error: (err) => {
           console.error(err);
