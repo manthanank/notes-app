@@ -65,6 +65,10 @@ export class NoteFormComponent implements OnInit {
     }
   }
 
+  onCancel(): void {
+    this.router.navigate(['/']);
+  }
+
   onSubmit(): void {
     this.submitted.set(true);
     if (this.noteForm.invalid) {
