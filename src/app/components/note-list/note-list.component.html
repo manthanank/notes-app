@@ -1,10 +1,10 @@
-<div class="container mx-auto mt-8">
+<div class="container mx-auto m-8">
     <h1 class="text-2xl font-bold mb-4">Notes</h1>
     <div class="mb-4">
         <input type="text" class="w-full p-2 border border-gray-300 rounded" placeholder="Search notes..."
             [(ngModel)]="search" (input)="searchNotes()" />
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         @if (isLoading() && notes.length === 0 && !error()) {
         <div class="p-4 bg-white rounded shadow">
             <h2 class="text-xl font-bold">Loading...</h2>
@@ -29,5 +29,14 @@
         </div>
         }
         }
+    </div>
+    <div class="mt-4 flex justify-center">
+        <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1"
+            class="px-4 py-2 bg-gray-300 rounded mr-2"
+            [ngClass]="{'opacity-50 cursor-not-allowed': currentPage() === 1}">Previous</button>
+        <span class="px-4 py-2">{{ currentPage() }} / {{ totalPages() }}</span>
+        <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()"
+            class="px-4 py-2 bg-gray-300 rounded ml-2"
+            [ngClass]="{'opacity-50 cursor-not-allowed': currentPage() === totalPages()}">Next</button>
     </div>
 </div>

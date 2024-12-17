@@ -5,12 +5,13 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { NgClass } from '@angular/common';
 
 @Component({
-    selector: 'app-note-list',
-    imports: [RouterLink, FormsModule],
-    templateUrl: './note-list.component.html',
-    styleUrl: './note-list.component.scss'
+  selector: 'app-note-list',
+  imports: [RouterLink, FormsModule, NgClass],
+  templateUrl: './note-list.component.html',
+  styleUrl: './note-list.component.scss',
 })
 export class NoteListComponent implements OnInit {
   notes: Note[] = [];
@@ -18,28 +19,32 @@ export class NoteListComponent implements OnInit {
   error = signal<string>('');
   search = signal<string>('');
   private searchSubject = new Subject<string>();
+  currentPage = signal<number>(1);
+  limit = signal<number>(10);
+  totalPages = signal<number>(1);
 
-  constructor(private noteService: NoteService) { }
+  constructor(private noteService: NoteService) {}
 
   ngOnInit(): void {
     this.getNotes();
-    this.searchSubject.pipe(debounceTime(300)).subscribe(searchTerm => {
+    this.searchSubject.pipe(debounceTime(300)).subscribe((searchTerm) => {
       this.performSearch(searchTerm);
     });
   }
 
   getNotes(): void {
     this.isLoading.set(true);
-    this.noteService.getNotes().subscribe({
-      next: (notes) => {
-        this.notes = notes.notes;
+    this.noteService.getNotes(this.currentPage(), this.limit()).subscribe({
+      next: (response) => {
+        this.notes = response.notes;
+        this.totalPages.set(response.totalPages);
         this.isLoading.set(false);
       },
       error: (error) => {
         console.error(error);
         this.isLoading.set(false);
         this.error.set(error?.error?.message || 'An error occurred');
-      }
+      },
     });
   }
 
@@ -50,19 +55,27 @@ export class NoteListComponent implements OnInit {
   private performSearch(searchTerm: string): void {
     if (searchTerm) {
       this.isLoading.set(true);
-      this.noteService.searchNotes(searchTerm).subscribe({
-        next: (notes) => {
-          this.notes = notes;
-          this.isLoading.set(false);
-        },
-        error: (error) => {
-          console.error(error);
-          this.isLoading.set(false);
-          this.error.set(error?.error?.message || 'An error occurred');
-        }
-      });
+      this.noteService
+        .searchNotes(searchTerm, this.currentPage(), this.limit())
+        .subscribe({
+          next: (response) => {
+            this.notes = response.notes;
+            this.totalPages.set(response.totalPages);
+            this.isLoading.set(false);
+          },
+          error: (error) => {
+            console.error(error);
+            this.isLoading.set(false);
+            this.error.set(error?.error?.message || 'An error occurred');
+          },
+        });
     } else {
       this.getNotes();
     }
+  }
+
+  goToPage(page: number): void {
+    this.currentPage.set(page);
+    this.getNotes();
   }
 }

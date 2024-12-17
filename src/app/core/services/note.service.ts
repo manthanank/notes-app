@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Note, Notes } from '../models/note';
+import { Note } from '../models/note';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -12,12 +12,21 @@ export class NoteService {
 
   constructor(private http: HttpClient) {}
 
-  getNotes(): Observable<Notes> {
-    return this.http.get<Notes>(this.apiUrl);
+  getNotes(page: number = 1, limit: number = 10): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+
+    return this.http.get<any>(this.apiUrl, { params });
   }
 
-  searchNotes(query: string): Observable<Note[]> {
-    return this.http.get<Note[]>(`${this.apiUrl}/search?query=${query}`);
+  searchNotes(query: string, page: number = 1, limit: number = 10): Observable<any> {
+    const params = new HttpParams()
+      .set('query', query)
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+  
+    return this.http.get<any>(`${this.apiUrl}/search`, { params });
   }
 
   getNoteById(id: string): Observable<Note> {
