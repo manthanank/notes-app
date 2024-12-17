@@ -5,11 +5,10 @@ import { NoteService } from '../../core/services/note.service';
 import { DatePipe } from '@angular/common';
 
 @Component({
-  selector: 'app-note-detail',
-  standalone: true,
-  imports: [DatePipe, RouterLink],
-  templateUrl: './note-detail.component.html',
-  styleUrl: './note-detail.component.scss',
+    selector: 'app-note-detail',
+    imports: [DatePipe, RouterLink],
+    templateUrl: './note-detail.component.html',
+    styleUrl: './note-detail.component.scss'
 })
 export class NoteDetailComponent implements OnInit {
   note: Note | undefined;

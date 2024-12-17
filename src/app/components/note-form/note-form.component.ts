@@ -10,11 +10,10 @@ import { Note } from '../../core/models/note';
 import { NoteService } from '../../core/services/note.service';
 
 @Component({
-  selector: 'app-note-form',
-  standalone: true,
-  imports: [ReactiveFormsModule],
-  templateUrl: './note-form.component.html',
-  styleUrl: './note-form.component.scss',
+    selector: 'app-note-form',
+    imports: [ReactiveFormsModule],
+    templateUrl: './note-form.component.html',
+    styleUrl: './note-form.component.scss'
 })
 export class NoteFormComponent implements OnInit {
   noteForm: FormGroup;

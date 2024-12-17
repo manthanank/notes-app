@@ -10,11 +10,10 @@ import { AuthService } from '../../core/services/auth.service';
 import { NgClass } from '@angular/common';
 
 @Component({
-  selector: 'app-login',
-  standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, NgClass],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.scss',
+    selector: 'app-login',
+    imports: [ReactiveFormsModule, RouterLink, NgClass],
+    templateUrl: './login.component.html',
+    styleUrl: './login.component.scss'
 })
 export class LoginComponent {
   loginForm: FormGroup;
