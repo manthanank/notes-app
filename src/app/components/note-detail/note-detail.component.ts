@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Note } from '../../core/models/note';
 import { NoteService } from '../../core/services/note.service';
 import { DatePipe } from '@angular/common';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-note-detail',
@@ -21,6 +22,7 @@ export class NoteDetailComponent implements OnInit {
   router = inject(Router);
   route = inject(ActivatedRoute);
   noteService = inject(NoteService);
+  toastService = inject(ToastService);
 
   constructor() {}
 
@@ -37,6 +39,10 @@ export class NoteDetailComponent implements OnInit {
           console.error(err);
           this.isLoading.set(false);
           this.error.set(err?.error?.message || 'An error occurred');
+          this.toastService.show(
+            err?.error?.message || 'An error occurred',
+            'error'
+          );
         },
       });
     }
@@ -56,10 +62,15 @@ export class NoteDetailComponent implements OnInit {
       next: (res) => {
         this.showConfirmDialog.set(false);
         this.router.navigate(['/notes']);
+        this.toastService.show('Note deleted successfully', 'success');
       },
       error: (err) => {
         console.error(err);
         this.error.set(err?.error?.message || 'An error occurred');
+        this.toastService.show(
+          err?.error?.message || 'An error occurred',
+          'error'
+        );
       },
     });
   }

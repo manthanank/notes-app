@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { Note } from '../../core/models/note';
 import { NoteService } from '../../core/services/note.service';
 import { RouterLink } from '@angular/router';
@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { NgClass } from '@angular/common';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-note-list',
@@ -23,7 +24,10 @@ export class NoteListComponent implements OnInit {
   limit = signal<number>(10);
   totalPages = signal<number>(1);
 
-  constructor(private noteService: NoteService) {}
+  toastService = inject(ToastService);
+  noteService = inject(NoteService);
+
+  constructor() {}
 
   ngOnInit(): void {
     this.getNotes();
@@ -44,6 +48,10 @@ export class NoteListComponent implements OnInit {
         console.error(error);
         this.isLoading.set(false);
         this.error.set(error?.error?.message || 'An error occurred');
+        this.toastService.show(
+          error?.error?.message || 'An error occurred',
+          'error'
+        );
       },
     });
   }
@@ -67,6 +75,10 @@ export class NoteListComponent implements OnInit {
             console.error(error);
             this.isLoading.set(false);
             this.error.set(error?.error?.message || 'An error occurred');
+            this.toastService.show(
+              error?.error?.message || 'An error occurred',
+              'error'
+            );
           },
         });
     } else {
