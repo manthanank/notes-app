@@ -1,14 +1,14 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Note } from '../../core/models/note';
 import { NoteService } from '../../core/services/note.service';
 import { DatePipe } from '@angular/common';
 
 @Component({
-    selector: 'app-note-detail',
-    imports: [DatePipe, RouterLink],
-    templateUrl: './note-detail.component.html',
-    styleUrl: './note-detail.component.scss'
+  selector: 'app-note-detail',
+  imports: [DatePipe],
+  templateUrl: './note-detail.component.html',
+  styleUrl: './note-detail.component.scss',
 })
 export class NoteDetailComponent implements OnInit {
   note: Note | undefined;
@@ -37,7 +37,7 @@ export class NoteDetailComponent implements OnInit {
           console.error(err);
           this.isLoading.set(false);
           this.error.set(err?.error?.message || 'An error occurred');
-        }
+        },
       });
     }
   }

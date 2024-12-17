@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Note } from '../models/note';
+import { Note, Notes } from '../models/note';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -12,8 +12,8 @@ export class NoteService {
 
   constructor(private http: HttpClient) {}
 
-  getNotes(): Observable<Note[]> {
-    return this.http.get<Note[]>(this.apiUrl);
+  getNotes(): Observable<Notes> {
+    return this.http.get<Notes>(this.apiUrl);
   }
 
   searchNotes(query: string): Observable<Note[]> {
