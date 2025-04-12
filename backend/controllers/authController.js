@@ -28,6 +28,7 @@ exports.register = async (req, res) => {
   }
 };
 
+// Updating the login method to track last login time
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -42,6 +43,10 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    // Update last login time
+    user.lastLogin = new Date();
+    await user.save();
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
@@ -49,7 +54,11 @@ exports.login = async (req, res) => {
     res.json({
       token: token,
       expiresIn: 3600,
-      user: { id: user._id, email: user.email },
+      user: { 
+        id: user._id, 
+        email: user.email,
+        roles: user.roles 
+      },
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

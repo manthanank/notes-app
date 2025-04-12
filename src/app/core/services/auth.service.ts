@@ -11,6 +11,7 @@ import { AuthResponse, PasswordResetResponse, UserCredentials } from '../models/
 export class AuthService {
   private apiUrl = environment.apiUrl + '/auth';
   private tokenExpirationTimer: number | null = null;
+  private currentUser: any = null;
 
   http = inject(HttpClient);
   router = inject(Router);
@@ -31,18 +32,33 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
+  getCurrentUser(): any {
+    if (this.currentUser) {
+      return this.currentUser;
+    }
+    
+    // Try to load from localStorage
+    const userJson = localStorage.getItem('currentUser');
+    if (userJson) {
+      this.currentUser = JSON.parse(userJson);
+      return this.currentUser;
+    }
+    
+    return null;
+  }
+
   register(user: UserCredentials): Observable<AuthResponse> {
     return this.http
       .post<AuthResponse>(`${this.apiUrl}/register`, user)
       .pipe(tap((response: AuthResponse) => {
-        // No operation needed here as the login component handles token storage
+        this.handleAuthentication(response.token, response.expiresIn, response.user);
       }));
   }
 
   login(user: UserCredentials): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, user).pipe(
       tap((response: AuthResponse) => {
-        this.handleAuthentication(response.token, response.expiresIn);
+        this.handleAuthentication(response.token, response.expiresIn, response.user);
       })
     );
   }
@@ -50,11 +66,13 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('tokenExpirationDate');
+    localStorage.removeItem('currentUser');
+    this.currentUser = null;
+    
     if (this.tokenExpirationTimer) {
       clearTimeout(this.tokenExpirationTimer);
       this.tokenExpirationTimer = null;
     }
-    // this.router.navigate(['/login']);
   }
 
   forgotPassword(email: string): Observable<PasswordResetResponse> {
@@ -67,10 +85,12 @@ export class AuthService {
     });
   }
 
-  private handleAuthentication(token: string, expiresIn: number): void {
+  private handleAuthentication(token: string, expiresIn: number, user: any): void {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
     localStorage.setItem('token', token);
     localStorage.setItem('tokenExpirationDate', expirationDate.toISOString());
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    this.currentUser = user;
     this.autoLogout(expiresIn * 1000);
   }
 
@@ -85,11 +105,22 @@ export class AuthService {
     }
     const expiresIn = expirationDate.getTime() - new Date().getTime();
     this.autoLogout(expiresIn);
+    
+    // Load current user
+    const userJson = localStorage.getItem('currentUser');
+    if (userJson) {
+      this.currentUser = JSON.parse(userJson);
+    }
   }
 
   autoLogout(expirationDuration: number): void {
     this.tokenExpirationTimer = window.setTimeout(() => {
       this.logout();
     }, expirationDuration) as unknown as number;
+  }
+  
+  isAdmin(): boolean {
+    const user = this.getCurrentUser();
+    return user && user.roles && user.roles.includes('admin');
   }
 }
