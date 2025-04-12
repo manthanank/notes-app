@@ -19,6 +19,7 @@ export class RegisterComponent implements OnInit {
   registerForm: FormGroup;
   error = signal<string>('');
   showPassword = signal<boolean>(false);
+  isLoading = signal<boolean>(false);
 
   authService = inject(AuthService);
   router = inject(Router);
@@ -46,22 +47,29 @@ export class RegisterComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.registerForm.valid) {
-      this.authService
-        .register({
-          email: this.registerForm.value.email,
-          password: this.registerForm.value.password,
-        })
-        .subscribe({
-          next: (res) => {
-            localStorage.setItem('token', res.token);
-            this.router.navigate(['/notes']);
-          },
-          error: (err) => {
-            console.error(err);
-            this.error.set(err?.error?.message || 'An error occurred');
-          },
-        });
+    if (this.registerForm.invalid) {
+      return;
     }
+
+    this.isLoading.set(true);
+    this.error.set('');
+
+    this.authService
+      .register({
+        email: this.registerForm.value.email,
+        password: this.registerForm.value.password,
+      })
+      .subscribe({
+        next: (res) => {
+          this.isLoading.set(false);
+          localStorage.setItem('token', res.token);
+          this.router.navigate(['/notes']);
+        },
+        error: (err) => {
+          console.error(err);
+          this.isLoading.set(false);
+          this.error.set(err?.error?.message || 'An error occurred');
+        },
+      });
   }
 }

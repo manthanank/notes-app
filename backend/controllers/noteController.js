@@ -47,6 +47,7 @@ exports.searchNotes = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
+    
     const notes = await Note.find({
       user: req.user.id,
       $or: [
@@ -56,7 +57,22 @@ exports.searchNotes = async (req, res) => {
     })
       .skip(skip)
       .limit(limit);
-    res.json(notes);
+      
+    // Get total count for pagination
+    const totalNotes = await Note.countDocuments({
+      user: req.user.id,
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { content: { $regex: query, $options: "i" } },
+      ],
+    });
+    
+    // Return the same structure as getAllNotes
+    res.json({
+      notes,
+      totalPages: Math.ceil(totalNotes / limit),
+      currentPage: page,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

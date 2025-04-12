@@ -19,6 +19,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   error = signal<string>('');
   showPassword = signal<boolean>(false);
+  isLoading = signal<boolean>(false);
 
   authService = inject(AuthService);
   router = inject(Router);
@@ -50,6 +51,9 @@ export class LoginComponent {
       return;
     }
 
+    this.isLoading.set(true);
+    this.error.set('');
+
     this.authService
       .login({
         email: this.loginForm.value.email,
@@ -57,11 +61,13 @@ export class LoginComponent {
       })
       .subscribe({
         next: (res) => {
+          this.isLoading.set(false);
           localStorage.setItem('token', res.token);
           this.router.navigate(['/notes']);
         },
         error: (err) => {
           console.error(err);
+          this.isLoading.set(false);
           this.error.set(err?.error?.message || 'An error occurred');
         },
       });

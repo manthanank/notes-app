@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Note } from '../../core/models/note';
 import { NoteService } from '../../core/services/note.service';
 import { DatePipe } from '@angular/common';
@@ -7,7 +7,7 @@ import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-note-detail',
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './note-detail.component.html',
   styleUrl: './note-detail.component.scss',
 })
@@ -52,7 +52,7 @@ export class NoteDetailComponent implements OnInit {
     this.router.navigate(['/edit-note', this.id]);
   }
 
-  showDeleteConfirm(noteId: any) {
+  showDeleteConfirm(noteId: string) {
     this.selectedNoteId.set(noteId);
     this.showConfirmDialog.set(true);
   }

@@ -5,18 +5,32 @@ import {
   FormControl,
   Validators,
   ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors
 } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
+// Password matching validator function
+function passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const password = control.get('password');
+  const confirmPassword = control.get('confirmPassword');
+
+  if (!password || !confirmPassword) {
+    return null;
+  }
+
+  return password.value === confirmPassword.value ? null : { passwordMismatch: true };
+}
+
 @Component({
-    selector: 'app-reset-password',
-    imports: [ReactiveFormsModule, RouterLink],
-    templateUrl: './reset-password.component.html',
-    styleUrl: './reset-password.component.scss'
+  selector: 'app-reset-password',
+  imports: [ReactiveFormsModule, RouterLink],
+  templateUrl: './reset-password.component.html',
+  styleUrl: './reset-password.component.scss'
 })
 export class ResetPasswordComponent implements OnInit {
-  resetPasswordForm: FormGroup = new FormGroup({});
+  resetPasswordForm: FormGroup;
   token: string;
 
   authService = inject(AuthService);
@@ -27,9 +41,9 @@ export class ResetPasswordComponent implements OnInit {
   constructor() {
     this.token = this.route.snapshot.paramMap.get('token')!;
     this.resetPasswordForm = this.fb.group({
-      password: new FormControl('', [Validators.required]),
+      password: new FormControl('', [Validators.required, Validators.minLength(6)]),
       confirmPassword: new FormControl('', [Validators.required]),
-    });
+    }, { validators: passwordMatchValidator });
   }
 
   ngOnInit(): void {}
@@ -43,11 +57,7 @@ export class ResetPasswordComponent implements OnInit {
   }
 
   onSubmit() {
-    if (
-      this.resetPasswordForm.value.password !==
-      this.resetPasswordForm.value.confirmPassword
-    ) {
-      console.error('Passwords do not match');
+    if (this.resetPasswordForm.invalid) {
       return;
     }
 

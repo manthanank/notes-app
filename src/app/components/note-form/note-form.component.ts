@@ -6,13 +6,13 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Note } from '../../core/models/note';
 import { NoteService } from '../../core/services/note.service';
 import { ToastService } from '../../core/services/toast.service';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-note-form',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, NgClass],
   templateUrl: './note-form.component.html',
   styleUrl: './note-form.component.scss',
 })
@@ -59,20 +59,28 @@ export class NoteFormComponent implements OnInit {
     this.noteId.set(id);
     if (id) {
       this.isEditMode.set(true);
-      this.route.data.subscribe({
+      this.noteService.getNoteById(id).subscribe({
         next: (res) => {
-          this.noteForm.patchValue(res['note']);
+          this.noteForm.patchValue({
+            title: res.title,
+            content: res.content
+          });
         },
         error: (err) => {
           console.error(err);
-          this.toastService.show('Failed to load note' , 'error');
+          this.toastService.show('Failed to load note', 'error');
+          this.router.navigate(['/notes']);
         },
       });
     }
   }
 
   onCancel(): void {
-    this.router.navigate(['/']);
+    if (this.isEditMode()) {
+      this.router.navigate(['/note', this.noteId()]);
+    } else {
+      this.router.navigate(['/notes']);
+    }
   }
 
   onSubmit(): void {
@@ -81,16 +89,39 @@ export class NoteFormComponent implements OnInit {
       return;
     }
 
-    const note: Note = this.noteForm.value;
+    // Create an object with only the fields needed for create/update
+    const noteData = {
+      title: this.noteForm.value.title,
+      content: this.noteForm.value.content
+    };
+
     if (this.isEditMode() && this.noteId()) {
-      this.noteService.updateNote(this.noteId(), note).subscribe(() => {
-        this.router.navigate(['/']);
-        this.toastService.show('Note updated successfully', 'success');
+      this.noteService.updateNote(this.noteId(), noteData).subscribe({
+        next: () => {
+          this.router.navigate(['/note', this.noteId()]);
+          this.toastService.show('Note updated successfully', 'success');
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastService.show(
+            err?.error?.message || 'Failed to update note',
+            'error'
+          );
+        },
       });
     } else {
-      this.noteService.createNote(note).subscribe(() => {
-        this.router.navigate(['/']);
-        this.toastService.show('Note created successfully', 'success');
+      this.noteService.createNote(noteData).subscribe({
+        next: () => {
+          this.router.navigate(['/notes']);
+          this.toastService.show('Note created successfully', 'success');
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastService.show(
+            err?.error?.message || 'Failed to create note',
+            'error'
+          );
+        },
       });
     }
   }

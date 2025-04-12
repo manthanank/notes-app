@@ -1,15 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthResponse, PasswordResetResponse, UserCredentials } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private apiUrl = environment.apiUrl + '/auth';
-  private tokenExpirationTimer: any;
+  private tokenExpirationTimer: number | null = null;
 
   http = inject(HttpClient);
   router = inject(Router);
@@ -18,7 +19,7 @@ export class AuthService {
     this.autoLogin();
   }
 
-  redirectToNotes() {
+  redirectToNotes(): void {
     this.router.navigate(['/notes']);
   }
 
@@ -30,15 +31,17 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-  register(user: any): Observable<any> {
+  register(user: UserCredentials): Observable<AuthResponse> {
     return this.http
-      .post(`${this.apiUrl}/register`, user)
-      .pipe(tap((response: any) => {}));
+      .post<AuthResponse>(`${this.apiUrl}/register`, user)
+      .pipe(tap((response: AuthResponse) => {
+        // No operation needed here as the login component handles token storage
+      }));
   }
 
-  login(user: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/login`, user).pipe(
-      tap((response: any) => {
+  login(user: UserCredentials): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, user).pipe(
+      tap((response: AuthResponse) => {
         this.handleAuthentication(response.token, response.expiresIn);
       })
     );
@@ -49,28 +52,29 @@ export class AuthService {
     localStorage.removeItem('tokenExpirationDate');
     if (this.tokenExpirationTimer) {
       clearTimeout(this.tokenExpirationTimer);
+      this.tokenExpirationTimer = null;
     }
     // this.router.navigate(['/login']);
   }
 
-  forgotPassword(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/forgot-password`, { email });
+  forgotPassword(email: string): Observable<PasswordResetResponse> {
+    return this.http.post<PasswordResetResponse>(`${this.apiUrl}/forgot-password`, { email });
   }
 
-  resetPassword(token: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/reset-password/${token}`, {
+  resetPassword(token: string, password: string): Observable<PasswordResetResponse> {
+    return this.http.post<PasswordResetResponse>(`${this.apiUrl}/reset-password/${token}`, {
       password,
     });
   }
 
-  private handleAuthentication(token: string, expiresIn: number) {
+  private handleAuthentication(token: string, expiresIn: number): void {
     const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
     localStorage.setItem('token', token);
     localStorage.setItem('tokenExpirationDate', expirationDate.toISOString());
     this.autoLogout(expiresIn * 1000);
   }
 
-  autoLogin() {
+  autoLogin(): void {
     const token = this.getToken();
     const expirationDate = new Date(
       localStorage.getItem('tokenExpirationDate') || ''
@@ -83,9 +87,9 @@ export class AuthService {
     this.autoLogout(expiresIn);
   }
 
-  autoLogout(expirationDuration: number) {
-    this.tokenExpirationTimer = setTimeout(() => {
+  autoLogout(expirationDuration: number): void {
+    this.tokenExpirationTimer = window.setTimeout(() => {
       this.logout();
-    }, expirationDuration);
+    }, expirationDuration) as unknown as number;
   }
 }
