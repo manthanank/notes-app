@@ -4,5 +4,10 @@
         <router-outlet></router-outlet>
     </div>
     <app-toast></app-toast>
-    <app-footer class="w-full mt-auto"></app-footer>
+    <app-footer 
+        class="w-full mt-auto"
+        [visitorCount]="visitorCount()"
+        [isVisitorCountLoading]="isVisitorCountLoading()"
+        [visitorCountError]="visitorCountError()">
+    </app-footer>
 </div>

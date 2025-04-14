@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input, Input } from '@angular/core';
 
 @Component({
     selector: 'app-footer',
@@ -7,5 +7,9 @@ import { Component } from '@angular/core';
     styleUrl: './footer.component.scss'
 })
 export class FooterComponent {
+    visitorCount = input<number>(0);
+    isVisitorCountLoading = input<boolean>(false);
+    visitorCountError = input<string | null>(null);
+    
     currentYear = new Date().getFullYear();
 }
