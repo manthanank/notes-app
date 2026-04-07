@@ -8,7 +8,7 @@ export class ToastService {
   
   constructor() {}
 
-  show(message: string, type: 'success' | 'error' = 'success') {
+  show(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') {
     this.toasts.push({ message, class: type });
     setTimeout(() => this.toasts.shift(), 3000);
   }

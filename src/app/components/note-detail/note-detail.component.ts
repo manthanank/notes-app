@@ -4,10 +4,11 @@ import { Note } from '../../core/models/note';
 import { NoteService } from '../../core/services/note.service';
 import { DatePipe } from '@angular/common';
 import { ToastService } from '../../core/services/toast.service';
+import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 
 @Component({
   selector: 'app-note-detail',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, MarkdownPipe],
   templateUrl: './note-detail.component.html',
   styleUrl: './note-detail.component.scss',
 })

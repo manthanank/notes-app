@@ -7,12 +7,14 @@ import {
 } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NoteService } from '../../core/services/note.service';
+import { AiService } from '../../core/services/ai.service';
 import { ToastService } from '../../core/services/toast.service';
 import { NgClass } from '@angular/common';
+import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 
 @Component({
   selector: 'app-note-form',
-  imports: [ReactiveFormsModule, NgClass],
+  imports: [ReactiveFormsModule, NgClass, MarkdownPipe],
   templateUrl: './note-form.component.html',
   styleUrl: './note-form.component.scss',
 })
@@ -21,9 +23,18 @@ export class NoteFormComponent implements OnInit {
   isEditMode = signal<boolean>(false);
   noteId = signal<string>('');
   submitted = signal<boolean>(false);
+  
+  // Note Form Modes
+  activeTab = signal<'write' | 'preview'>('write');
+
+  // AI Loading states
+
+  isSummarizing = signal<boolean>(false);
+  isGeneratingTags = signal<boolean>(false);
 
   fb = inject(FormBuilder);
   noteService = inject(NoteService);
+  aiService = inject(AiService);
   router = inject(Router);
   route = inject(ActivatedRoute);
   toastService = inject(ToastService);
@@ -34,11 +45,13 @@ export class NoteFormComponent implements OnInit {
         '',
         [
           Validators.required,
-          Validators.maxLength(50),
+          Validators.maxLength(100),
           Validators.minLength(3),
         ],
       ],
-      content: ['', [Validators.required, Validators.maxLength(500)]],
+      content: ['', [Validators.required, Validators.maxLength(2000)]],
+      summary: [''],
+      tags: [[]]
     });
   }
 
@@ -60,10 +73,12 @@ export class NoteFormComponent implements OnInit {
     if (id) {
       this.isEditMode.set(true);
       this.noteService.getNoteById(id).subscribe({
-        next: (res) => {
+        next: (res: any) => {
           this.noteForm.patchValue({
             title: res.title,
-            content: res.content
+            content: res.content,
+            summary: res.summary || '',
+            tags: res.tags || []
           });
         },
         error: (err) => {
@@ -75,9 +90,57 @@ export class NoteFormComponent implements OnInit {
     }
   }
 
+  generateSummary(): void {
+    const content = this.noteForm.value.content;
+    if (!content || content.length < 20) {
+      this.toastService.show('Content is too short to summarize', 'warning');
+      return;
+    }
+
+    this.isSummarizing.set(true);
+    this.aiService.summarize(content).subscribe({
+      next: (res) => {
+        this.noteForm.patchValue({ summary: res.summary });
+        this.toastService.show('AI Summary generated!', 'success');
+        this.isSummarizing.set(false);
+      },
+      error: () => {
+        this.toastService.show('AI Summarization failed', 'error');
+        this.isSummarizing.set(false);
+      }
+    });
+  }
+
+  generateTags(): void {
+    const { title, content } = this.noteForm.value;
+    if (!content) {
+      this.toastService.show('Content is required for tags', 'warning');
+      return;
+    }
+
+    this.isGeneratingTags.set(true);
+    this.aiService.generateTags(title, content).subscribe({
+      next: (res) => {
+        this.noteForm.patchValue({ tags: res.tags });
+        this.toastService.show('Magic Tags generated!', 'success');
+        this.isGeneratingTags.set(false);
+      },
+      error: () => {
+        this.toastService.show('AI Tag generation failed', 'error');
+        this.isGeneratingTags.set(false);
+      }
+    });
+  }
+
+  removeTag(index: number): void {
+    const currentTags = [...this.noteForm.value.tags];
+    currentTags.splice(index, 1);
+    this.noteForm.patchValue({ tags: currentTags });
+  }
+
   onCancel(): void {
     if (this.isEditMode()) {
-      this.router.navigate(['/note', this.noteId()]);
+      this.router.navigate(['/notes']);
     } else {
       this.router.navigate(['/notes']);
     }
@@ -89,16 +152,12 @@ export class NoteFormComponent implements OnInit {
       return;
     }
 
-    // Create an object with only the fields needed for create/update
-    const noteData = {
-      title: this.noteForm.value.title,
-      content: this.noteForm.value.content
-    };
+    const noteData = this.noteForm.value;
 
     if (this.isEditMode() && this.noteId()) {
       this.noteService.updateNote(this.noteId(), noteData).subscribe({
         next: () => {
-          this.router.navigate(['/note', this.noteId()]);
+          this.router.navigate(['/notes']);
           this.toastService.show('Note updated successfully', 'success');
         },
         error: (err) => {
@@ -126,3 +185,4 @@ export class NoteFormComponent implements OnInit {
     }
   }
 }
+

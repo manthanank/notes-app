@@ -1,90 +1,156 @@
-<div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8">
-    <!-- Navigation -->
-    <div class="mb-6">
-        <a (click)="onCancel()" class="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
-            <i class="fas fa-arrow-left mr-1"></i> Back to notes
-        </a>
+<div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8 relative">
+    <!-- Breadcrumbs -->
+    <div class="mb-8 flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+        <a routerLink="/notes" class="hover:text-blue-600 transition-colors">My Workspace</a>
+        <i class="fas fa-chevron-right text-[10px]"></i>
+        <span class="text-gray-900 dark:text-white">{{ isEditMode() ? 'Edit Note' : 'Create New' }}</span>
     </div>
 
-    <!-- Form Card -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <div class="p-6">
-            <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-6">{{ isEditMode() ? 'Edit Note' : 'Create Note' }}</h1>
+    <div class="max-w-4xl mx-auto">
+        <div class="glass-panel p-8 md:p-12">
+            <header class="mb-10">
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent inline-block mb-3">
+                    {{ isEditMode() ? 'Refine Your Idea' : 'Capture a Spark' }}
+                </h1>
+                <p class="text-gray-500 dark:text-gray-400 text-lg">Every great achievement starts with a single thought.</p>
+            </header>
             
-            <form [formGroup]="noteForm" (ngSubmit)="onSubmit()" class="space-y-6">
-                <!-- Title -->
-                <div>
-                    <label for="title" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Title</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-heading text-gray-400"></i>
-                        </div>
+            <form [formGroup]="noteForm" (ngSubmit)="onSubmit()" class="space-y-10">
+                <!-- Title & Tags -->
+                <div class="space-y-6">
+                    <div class="relative group">
+                        <label for="title" class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-3 block">Title</label>
                         <input 
                             id="title" 
                             type="text" 
                             formControlName="title"
-                            class="pl-10 block w-full px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                            placeholder="Enter note title..."
+                            class="w-full bg-transparent border-b-2 border-gray-200 dark:border-gray-700 py-4 text-3xl font-bold focus:border-blue-600 outline-none transition-colors dark:text-white placeholder-gray-300 dark:placeholder-gray-600"
+                            placeholder="Enter a title..."
                         >
-                    </div>
-                    @if (title?.invalid && submitted()) {
-                    <div class="text-red-500 dark:text-red-400 text-sm mt-1">
-                        @if (title?.hasError?.('required')) {
-                        <p><i class="fas fa-exclamation-circle mr-1"></i> Title is required</p>
-                        }
-                        @if (title?.hasError?.('maxlength')) {
-                        <p><i class="fas fa-exclamation-circle mr-1"></i> Title must be at most 50 characters</p>
-                        }
-                        @if (title?.hasError?.('minlength')) {
-                        <p><i class="fas fa-exclamation-circle mr-1"></i> Title must be at least 3 characters</p>
+                        @if (title?.invalid && submitted()) {
+                            <p class="text-red-500 text-sm mt-2 font-medium"><i class="fas fa-circle-exclamation mr-1"></i> Title is required</p>
                         }
                     </div>
-                    }
+
+                    <!-- AI Tags Section -->
+                    <div class="pt-4">
+                        <div class="flex justify-between items-end mb-4">
+                            <label class="text-sm font-bold uppercase tracking-wider text-gray-400">Smart Tags</label>
+                            <button 
+                                type="button"
+                                (click)="generateTags()"
+                                [disabled]="isGeneratingTags()"
+                                class="text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center transition-all disabled:opacity-50">
+                                <i class="fas fa-wand-magic-sparkles mr-2" [ngClass]="{'animate-spin': isGeneratingTags()}"></i>
+                                Magic Tags
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-2 min-h-[40px] p-4 bg-blue-50/30 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-800/30">
+                            @if (noteForm.value.tags?.length > 0) {
+                                @for (tag of noteForm.value.tags; track $index) {
+                                    <span class="px-3 py-1 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-700 rounded-full text-sm font-bold text-blue-600 flex items-center gap-2 animate-in zoom-in-75 duration-300">
+                                        #{{ tag }}
+                                        <i class="fas fa-times cursor-pointer hover:text-red-500" (click)="removeTag($index)"></i>
+                                    </span>
+                                }
+                            } @else {
+                                <span class="text-gray-400 text-sm italic">No tags generated yet. Click "Magic Tags" to analyze your note.</span>
+                            }
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Content -->
-                <div>
-                    <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content</label>
+                <!-- Content Area -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <label for="content" class="text-sm font-bold uppercase tracking-wider text-gray-400 block">Content</label>
+                        <div class="flex glass-panel p-1 bg-gray-100 dark:bg-white/5 border-none">
+                            <button 
+                                type="button"
+                                (click)="activeTab.set('write')"
+                                [ngClass]="activeTab() === 'write' ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm' : 'text-gray-500'"
+                                class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all">
+                                WRITE
+                            </button>
+                            <button 
+                                type="button"
+                                (click)="activeTab.set('preview')"
+                                [ngClass]="activeTab() === 'preview' ? 'bg-white dark:bg-gray-800 text-blue-600 shadow-sm' : 'text-gray-500'"
+                                class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all">
+                                PREVIEW
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="relative glass-panel bg-white/40 dark:bg-black/20 p-1 min-h-[400px]">
+                        @if (activeTab() === 'write') {
+                            <textarea 
+                                id="content" 
+                                formControlName="content" 
+                                rows="15"
+                                class="w-full bg-transparent px-6 py-6 border-none outline-none text-gray-800 dark:text-gray-200 text-xl leading-relaxed resize-none font-medium animate-in fade-in duration-300"
+                                placeholder="Start typing your masterpiece (Markdown supported)..."
+                            ></textarea>
+                        } @else {
+                            <div class="prose prose-xl prose-slate dark:prose-invert max-w-none px-6 py-6 overflow-y-auto max-h-[500px] animate-in fade-in duration-300">
+                                @if (content?.value) {
+                                    <div [innerHTML]="content?.value | markdown"></div>
+                                } @else {
+                                    <p class="text-gray-400 italic">Nothing to preview yet...</p>
+                                }
+                            </div>
+                        }
+                        
+                        <div class="absolute bottom-4 right-6 flex items-center gap-4">
+                           <span class="text-sm font-bold" [ngClass]="content?.value?.length > 1800 ? 'text-red-500' : 'text-gray-400'">
+                                {{ content?.value?.length || 0 }} / 2000
+                           </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Summary Field -->
+                <div class="pt-6">
+                    <div class="flex justify-between items-end mb-4">
+                         <label class="text-sm font-bold uppercase tracking-wider text-gray-400 flex items-center">
+                            AI Executive Summary
+                            <span class="ml-3 px-2 py-0.5 bg-purple-500/10 text-purple-600 text-[10px] rounded uppercase tracking-tighter border border-purple-200/50">experimental</span>
+                         </label>
+                         <button 
+                            type="button"
+                            (click)="generateSummary()"
+                            [disabled]="isSummarizing() || !content?.value"
+                            class="text-sm font-bold text-purple-600 hover:text-purple-700 flex items-center transition-all disabled:opacity-50">
+                            <i class="fas fa-sparkles mr-2" [ngClass]="{'animate-pulse': isSummarizing()}"></i>
+                            {{ isSummarizing() ? 'Analyzing...' : 'Auto Summarize' }}
+                        </button>
+                    </div>
                     <div class="relative">
                         <textarea 
-                            id="content" 
-                            formControlName="content" 
-                            rows="10"
-                            class="block w-full px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                            placeholder="Write your note content here..."
+                            formControlName="summary"
+                            rows="2"
+                            class="w-full glass-panel bg-purple-500/5 dark:bg-purple-900/5 border-purple-200/30 dark:border-purple-800/30 px-6 py-4 text-gray-600 dark:text-gray-400 italic outline-none resize-none"
+                            placeholder="The AI summary will appear here..."
                         ></textarea>
-                    </div>
-                    @if (content?.invalid && submitted()) {
-                    <div class="text-red-500 dark:text-red-400 text-sm mt-1">
-                        @if (content?.hasError?.('required')) {
-                        <p><i class="fas fa-exclamation-circle mr-1"></i> Content is required</p>
-                        }
-                        @if (content?.hasError?.('maxlength')) {
-                        <p><i class="fas fa-exclamation-circle mr-1"></i> Content must be at most 500 characters</p>
-                        }
-                    </div>
-                    }
-                    <div class="text-right text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {{ content?.value?.length || 0 }}/500 characters
                     </div>
                 </div>
 
-                <!-- Form Actions -->
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-6 flex flex-wrap justify-end gap-3">
-                    <button 
-                        type="button" 
-                        class="px-5 py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                        (click)="onCancel()">
-                        <i class="fas fa-times mr-1"></i> Cancel
+                <!-- Footer Actions -->
+                <footer class="pt-10 border-t border-gray-100 dark:border-white/5 flex justify-between items-center">
+                    <button type="button" (click)="onCancel()" class="text-gray-500 hover:text-gray-700 dark:hover:text-white font-bold transition-colors">
+                        Discard Changes
                     </button>
-                    <button 
-                        type="submit" 
-                        class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white rounded-lg transition-colors">
-                        <i class="fas" [ngClass]="isEditMode() ? 'fa-save' : 'fa-plus'"></i>
-                        {{ isEditMode() ? ' Update Note' : ' Create Note' }}
-                    </button>
-                </div>
+                    
+                    <div class="flex gap-4">
+                        <button 
+                            type="submit" 
+                            class="px-10 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl font-bold shadow-xl shadow-blue-500/25 transition-all hover:-translate-y-1 active:scale-95 flex items-center">
+                            <i class="fas mr-3" [ngClass]="isEditMode() ? 'fa-check-circle' : 'fa-paper-plane'"></i>
+                            {{ isEditMode() ? 'Save Changes' : 'Publish Note' }}
+                        </button>
+                    </div>
+                </footer>
             </form>
         </div>
     </div>
-</div>
+</div>
