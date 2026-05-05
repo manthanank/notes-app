@@ -12,6 +12,8 @@ import { ToastService } from '../../core/services/toast.service';
 import { NgClass, DatePipe } from '@angular/common';
 import { MarkdownPipe } from '../../shared/pipes/markdown.pipe';
 import { HostListener } from '@angular/core';
+import { debounceTime } from 'rxjs/operators';
+import { Note } from '../../core/models/note';
 
 @Component({
   selector: 'app-note-form',
@@ -23,6 +25,7 @@ export class NoteFormComponent implements OnInit {
   noteForm: FormGroup;
   isEditMode = signal<boolean>(false);
   noteId = signal<string>('');
+  note = signal<Note | null>(null);
   submitted = signal<boolean>(false);
   lastSaved = signal<Date | null>(null);
   isSaving = signal<boolean>(false);
@@ -91,7 +94,7 @@ export class NoteFormComponent implements OnInit {
         
         if (this.isEditMode() && this.noteId()) {
           this.isSaving.set(true);
-          this.noteService.updateNote(this.noteId(), formValue).subscribe({
+          this.noteService.updateNote(this.noteId(), formValue as Partial<Note>).subscribe({
             next: () => {
               this.lastSaved.set(new Date());
               this.isSaving.set(false);
@@ -116,6 +119,7 @@ export class NoteFormComponent implements OnInit {
       this.isEditMode.set(true);
       this.noteService.getNoteById(id).subscribe({
         next: (res: any) => {
+          this.note.set(res);
           this.noteForm.patchValue({
             title: res.title,
             content: res.content,
@@ -197,7 +201,7 @@ export class NoteFormComponent implements OnInit {
     
     this.isContinuing.set(true);
     this.aiService.continueWriting(content).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res && res.continuation) {
           const currentContent = this.noteForm.get('content')?.value || '';
           this.noteForm.patchValue({ content: currentContent + '\n\n' + res.continuation });
@@ -205,7 +209,7 @@ export class NoteFormComponent implements OnInit {
         }
         this.isContinuing.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isContinuing.set(false);
         this.toastService.show('Failed to continue writing.', 'error');
       }
@@ -221,7 +225,7 @@ export class NoteFormComponent implements OnInit {
     
     this.isExtractingTasks.set(true);
     this.aiService.extractActionItems(content).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res && res.actionItems) {
           const currentContent = this.noteForm.get('content')?.value || '';
           this.noteForm.patchValue({ content: currentContent + '\n\n### Action Items\n' + res.actionItems });
@@ -229,7 +233,7 @@ export class NoteFormComponent implements OnInit {
         }
         this.isExtractingTasks.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isExtractingTasks.set(false);
         this.toastService.show('Failed to extract action items.', 'error');
       }
@@ -430,7 +434,7 @@ export class NoteFormComponent implements OnInit {
       });
       this.showVersions.set(false);
       this.toastService.show('Version restored. Saving...', 'success');
-      this.saveNote(); // Auto save immediately to commit the restore
+      this.onSubmit(); // Auto save immediately to commit the restore
     }
   }
 }

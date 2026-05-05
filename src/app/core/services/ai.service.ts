@@ -17,4 +17,12 @@ export class AiService {
   generateTags(title: string, content: string): Observable<{ tags: string[] }> {
     return this.http.post<{ tags: string[] }>(`${this.apiUrl}/tags`, { title, content });
   }
+
+  continueWriting(content: string): Observable<{ continuation: string }> {
+    return this.http.post<{ continuation: string }>(`${this.apiUrl}/continue`, { content });
+  }
+
+  extractActionItems(content: string): Observable<{ actionItems: string }> {
+    return this.http.post<{ actionItems: string }>(`${this.apiUrl}/action-items`, { content });
+  }
 }

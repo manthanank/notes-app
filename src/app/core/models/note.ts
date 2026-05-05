@@ -8,6 +8,8 @@ export interface Note {
   _id: string;
   user: string;
   title: string;
+  content: string;
+  summary?: string;
   tags?: string[];
   folder?: string;
   isPinned?: boolean;
