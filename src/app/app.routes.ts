@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 import { NoteResolverService } from './core/services/notes-resolver.service';
+import { NoteFormComponent } from './components/note-form/note-form.component';
+import { SharedNoteComponent } from './components/shared-note/shared-note.component';
 
 export const routes: Routes = [
   {
@@ -33,10 +35,7 @@ export const routes: Routes = [
   },
   {
     path: 'edit-note/:id',
-    loadComponent: () =>
-      import('./components/note-form/note-form.component').then(
-        (m) => m.NoteFormComponent
-      ),
+    component: NoteFormComponent,
     canActivate: [AuthGuard],
     resolve: {
       note: NoteResolverService,
@@ -68,5 +67,6 @@ export const routes: Routes = [
         (m) => m.ResetPasswordComponent
       ),
   },
+  { path: 'shared/:id', component: SharedNoteComponent },
   { path: '**', redirectTo: '' },
 ];

@@ -1,0 +1,85 @@
+<div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8 max-w-4xl min-h-screen">
+    @if (isLoading()) {
+        <div class="w-full flex flex-col justify-center items-center py-24">
+            <div class="relative">
+                <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <div class="absolute inset-2 border-4 border-purple-500 border-b-transparent rounded-full animate-spin-slow"></div>
+            </div>
+            <p class="mt-6 text-gray-500 font-medium animate-pulse">Loading shared note...</p>
+        </div>
+    } @else if (error()) {
+        <div class="glass-panel border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-900/10 p-12 text-center max-w-2xl mx-auto mt-12">
+            <div class="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-lock text-3xl text-red-600 dark:text-red-400"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">Access Denied</h3>
+            <p class="text-gray-600 dark:text-gray-400 text-lg mb-8">{{ error() }}</p>
+            <a routerLink="/" class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all font-bold">
+                <i class="fas fa-home mr-2"></i> Go to Homepage
+            </a>
+        </div>
+    } @else if (note()) {
+        <div class="glass-panel p-8 md:p-12 mb-8 relative overflow-hidden">
+            <!-- Decorative accent -->
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+            
+            <header class="mb-10 pb-8 border-b border-gray-100 dark:border-gray-800">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="px-3 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold rounded-full flex items-center">
+                        <i class="fas fa-globe-americas mr-1.5"></i> Shared Note
+                    </span>
+                    @if (note()?.folder) {
+                        <span class="px-3 py-1 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-xs font-bold rounded-full flex items-center">
+                            <i class="fas fa-folder mr-1.5"></i> {{ note()?.folder }}
+                        </span>
+                    }
+                </div>
+                
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">{{ note()?.title }}</h1>
+                
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    <span class="flex items-center">
+                        <i class="far fa-calendar-alt mr-2 text-blue-500"></i>
+                        Created {{ note()?.createdAt | date:'longDate' }}
+                    </span>
+                    
+                    @if (note()?.tags && note()!.tags!.length > 0) {
+                        <div class="flex items-center gap-2 border-l border-gray-200 dark:border-gray-700 pl-4">
+                            <i class="fas fa-tags text-blue-500"></i>
+                            <div class="flex gap-1 flex-wrap">
+                                @for (tag of note()?.tags; track $index) {
+                                    <span class="px-2 py-0.5 bg-blue-50/50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-semibold rounded">
+                                        {{ tag }}
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </header>
+
+            @if (note()?.summary) {
+                <div class="mb-10 p-6 bg-purple-50 dark:bg-purple-900/10 rounded-2xl border border-purple-100 dark:border-purple-800/20 relative">
+                    <div class="absolute -top-3 -left-3 w-8 h-8 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center text-purple-600 dark:text-purple-400 border border-white dark:border-gray-900">
+                        <i class="fas fa-sparkles text-xs"></i>
+                    </div>
+                    <h3 class="text-sm font-bold uppercase tracking-wider text-purple-800 dark:text-purple-300 mb-2">Executive Summary</h3>
+                    <p class="text-purple-900/80 dark:text-purple-200/80 leading-relaxed italic">
+                        {{ note()?.summary }}
+                    </p>
+                </div>
+            }
+
+            <div class="prose prose-lg prose-blue dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-blue-600 dark:prose-a:text-blue-400 hover:prose-a:text-blue-500 prose-img:rounded-xl prose-img:shadow-md">
+                <div [innerHTML]="note()?.content || '' | markdown"></div>
+            </div>
+        </div>
+        
+        <div class="text-center pb-12">
+            <p class="text-gray-500 dark:text-gray-400 mb-4">Want to create your own notes like this?</p>
+            <a routerLink="/" class="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 font-bold rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                Try NotesApp Today
+            </a>
+        </div>
+    }
+</div>

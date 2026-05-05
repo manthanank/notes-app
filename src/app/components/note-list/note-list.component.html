@@ -10,9 +10,9 @@
         </a>
     </div>
     
-    <!-- Search & Filter -->
+    <!-- Search & Filter & Tabs -->
     <div class="mb-12">
-        <div class="relative group">
+        <div class="relative group mb-6">
             <div class="absolute inset-y-0 left-0 flex items-center pl-5 pointer-events-none">
                 <i class="fas fa-search text-blue-500 group-focus-within:text-blue-600 transition-colors"></i>
             </div>
@@ -20,9 +20,60 @@
                 type="text" 
                 class="w-full pl-12 pr-6 py-5 glass-panel focus:ring-2 focus:ring-blue-500/20 border-none outline-none text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-lg shadow-sm" 
                 placeholder="Search by title or keywords..." 
-                [ngModel]="search()" 
-                (ngModelChange)="search.set($event); searchNotes()" 
+                [formControl]="searchControl"
             />
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 dark:border-gray-800 pb-2">
+            <div class="flex gap-2 overflow-x-auto w-full md:w-auto">
+                <button (click)="setTab('active')" [ngClass]="currentTab() === 'active' ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border-transparent'" class="px-6 py-3 font-bold border-b-2 whitespace-nowrap transition-colors">
+                    <i class="fas fa-sticky-note mr-2"></i> Active
+                </button>
+                <button (click)="setTab('archived')" [ngClass]="currentTab() === 'archived' ? 'text-blue-600 border-blue-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border-transparent'" class="px-6 py-3 font-bold border-b-2 whitespace-nowrap transition-colors">
+                    <i class="fas fa-archive mr-2"></i> Archived
+                </button>
+                <button (click)="setTab('trashed')" [ngClass]="currentTab() === 'trashed' ? 'text-red-600 border-red-600' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border-transparent'" class="px-6 py-3 font-bold border-b-2 whitespace-nowrap transition-colors">
+                    <i class="fas fa-trash-alt mr-2"></i> Trash
+                </button>
+            </div>
+
+            <!-- Folder & Sort Dropdowns -->
+            <div class="flex gap-4">
+                <div class="relative min-w-[150px]">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-folder text-gray-400"></i>
+                    </div>
+                    <select 
+                        (change)="onFolderChange($event)"
+                        class="block w-full pl-10 pr-10 py-3 border-transparent rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 focus:bg-white dark:focus:bg-gray-700 focus:ring-0 transition-all font-semibold appearance-none">
+                        <option value="All">All Folders</option>
+                        @for (folder of folders(); track folder) {
+                            <option [value]="folder">{{ folder }}</option>
+                        }
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                    </div>
+                </div>
+                
+                <div class="relative min-w-[180px]">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-sort text-gray-400"></i>
+                    </div>
+                    <select 
+                        (change)="onSortChange($event)"
+                        class="block w-full pl-10 pr-10 py-3 border-transparent rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white focus:border-blue-500 focus:bg-white dark:focus:bg-gray-700 focus:ring-0 transition-all font-semibold appearance-none">
+                        <option value="createdAt-desc">Newest First</option>
+                        <option value="createdAt-asc">Oldest First</option>
+                        <option value="title-asc">Title (A-Z)</option>
+                        <option value="title-desc">Title (Z-A)</option>
+                        <option value="order-asc">Custom Order</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -64,20 +115,37 @@
     
     <!-- Notes Grid -->
     } @else if (notes && notes.length > 0) {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div cdkDropList (cdkDropListDropped)="drop($event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         @for (note of notes; track note._id) {
-        <div class="glass-panel group overflow-hidden flex flex-col h-full hover:border-blue-500/30">
+        <div cdkDrag [cdkDragDisabled]="sortBy() !== 'order'" class="glass-panel group overflow-hidden flex flex-col h-full hover:border-blue-500/30" [ngClass]="sortBy() === 'order' ? 'cursor-move' : ''">
             <div class="p-8 flex-grow">
                 <div class="flex justify-between items-start mb-4">
                      <span class="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
                         <i class="fas fa-sticky-note"></i>
                     </span>
-                    <div class="flex gap-1">
-                        @for (tag of note.tags?.slice(0, 2); track $index) {
-                            <span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 text-[10px] font-bold rounded uppercase tracking-tighter">
-                                {{ tag }}
+                    <div class="flex items-center gap-2">
+                        @if (note.reminderDate) {
+                            <span class="text-[10px] font-bold px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded flex items-center border border-yellow-200 dark:border-yellow-700/50 uppercase" title="Reminder set">
+                                <i class="fas fa-bell mr-1"></i> {{ note.reminderDate | date:'short' }}
                             </span>
                         }
+                        <span class="text-[10px] font-bold px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded flex items-center border border-gray-200 dark:border-gray-700 uppercase hidden sm:flex">
+                            <i class="fas fa-folder mr-1"></i> {{ note.folder || 'General' }}
+                        </span>
+                        <div class="flex gap-1 hidden lg:flex">
+                            @for (tag of note.tags?.slice(0, 2); track $index) {
+                                <span class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 text-[10px] font-bold rounded uppercase tracking-tighter">
+                                    {{ tag }}
+                                </span>
+                            }
+                        </div>
+                        <button (click)="exportNote(note, 'markdown', $event)" class="w-8 h-8 rounded-full flex items-center justify-center transition-colors text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="Export as MD">
+                            <i class="fas fa-file-download"></i>
+                        </button>
+                        <button (click)="togglePin(note, $event)" class="w-8 h-8 rounded-full flex items-center justify-center transition-colors" 
+                            [ngClass]="note.isPinned ? 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'">
+                            <i class="fas fa-thumbtack" [ngClass]="note.isPinned ? 'rotate-45' : ''"></i>
+                        </button>
                     </div>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-4 line-clamp-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ note.title }}</h2>
@@ -96,9 +164,36 @@
                 <span class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center">
                     <i class="far fa-clock mr-2"></i> {{ note.createdAt | date: 'MMM d, y' }}
                 </span>
-                <a [routerLink]="['/edit-note', note._id]" class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 text-blue-600 shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-blue-600 hover:text-white transition-all transform hover:rotate-12">
-                    <i class="fas fa-edit"></i>
-                </a>
+                <div class="flex gap-2">
+                    @if (currentTab() === 'active') {
+                        <button (click)="archiveNote(note, $event)" class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 shadow-sm border border-gray-100 dark:border-gray-700 hover:text-blue-600 transition-all transform hover:scale-110" title="Archive">
+                            <i class="fas fa-archive"></i>
+                        </button>
+                        <button (click)="shareNote(note, $event)" class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700 hover:text-blue-600 transition-all transform hover:scale-110" [ngClass]="note.isPublic ? 'text-blue-600' : 'text-gray-600 dark:text-gray-400'" title="Share Note">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                        <a [routerLink]="['/edit-note', note._id]" class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 text-blue-600 shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-blue-600 hover:text-white transition-all transform hover:rotate-12">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button (click)="trashNote(note, $event)" class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 text-red-500 shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-red-500 hover:text-white transition-all transform hover:scale-110" title="Move to Trash">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    } @else if (currentTab() === 'archived') {
+                        <button (click)="unarchiveNote(note, $event)" class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 text-blue-600 shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110" title="Unarchive">
+                            <i class="fas fa-box-open"></i>
+                        </button>
+                        <button (click)="trashNote(note, $event)" class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 text-red-500 shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-red-500 hover:text-white transition-all transform hover:scale-110" title="Move to Trash">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    } @else if (currentTab() === 'trashed') {
+                        <button (click)="restoreNote(note, $event)" class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 text-green-500 shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-green-500 hover:text-white transition-all transform hover:scale-110" title="Restore">
+                            <i class="fas fa-trash-restore"></i>
+                        </button>
+                        <button (click)="deletePermanently(note, $event)" class="w-10 h-10 rounded-full flex items-center justify-center bg-white dark:bg-gray-800 text-red-600 shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-red-600 hover:text-white transition-all transform hover:scale-110" title="Delete Permanently">
+                            <i class="fas fa-times-circle"></i>
+                        </button>
+                    }
+                </div>
             </div>
         </div>
         }

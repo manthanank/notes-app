@@ -6,6 +6,19 @@ const noteSchema = new mongoose.Schema({
   content: String,
   summary: String,
   tags: [String],
+  folder: { type: String, default: 'General' },
+  isPinned: { type: Boolean, default: false },
+  isArchived: { type: Boolean, default: false },
+  isTrashed: { type: Boolean, default: false },
+  isPublic: { type: Boolean, default: false },
+  reminderDate: { type: Date },
+  versions: [{
+    title: String,
+    content: String,
+    summary: String,
+    updatedAt: { type: Date, default: Date.now }
+  }],
+  order: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
 });
 
