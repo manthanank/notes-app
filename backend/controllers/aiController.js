@@ -3,8 +3,8 @@ require('dotenv').config();
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-// Use gemini-2.0-flash (fast, efficient and latest free tier friendly)
-const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
+const model = genAI.getGenerativeModel({ model: GEMINI_MODEL });
 
 /**
  * Summarize note content using Google Gemini
@@ -64,7 +64,6 @@ exports.continueWriting = async (req, res) => {
     const { content } = req.body;
     if (!content) return res.status(400).json({ message: "Content is required" });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `You are an AI writing assistant. The user is writing a note. Please read what they have written and provide the next 1-2 paragraphs to continue their thought naturally. Write ONLY the continuation, do not include any conversational filler or introductions.
 
 User's note:
@@ -87,7 +86,6 @@ exports.extractActionItems = async (req, res) => {
     const { content } = req.body;
     if (!content) return res.status(400).json({ message: "Content is required" });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     const prompt = `You are an AI assistant. Analyze the following note and extract all tasks, to-dos, or action items implicitly or explicitly mentioned.
 Return the result strictly as a Markdown checklist (e.g. "- [ ] Task 1"). If there are no action items, return the exact string "No action items found."
 
