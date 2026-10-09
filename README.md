@@ -58,6 +58,8 @@ This is a full-stack notes application built with Node.js for the backend and An
     JWT_SECRET=your_jwt_secret
     EMAIL_USER=your-email@gmail.com
     EMAIL_PASS=your-email-password
+    GEMINI_API_KEY=your_gemini_api_key
+    GEMINI_MODEL=gemini-3.5-flash-lite
     ```
 
 4. Start the backend server:
